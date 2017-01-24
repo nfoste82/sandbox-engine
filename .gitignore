@@ -1,3 +1,6 @@
+sandbox-engine
+*.sublime-project
+*.sublime-workspace
 
 *.o
 *.obj
