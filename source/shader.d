@@ -4,6 +4,8 @@ import std.stdio;
 import std.file;
 import std.string;
 
+import std.experimental.logger;
+
 import derelict.opengl3.gl3;
 
 GLuint LoadShader(string vertexFilePath, string fragmentFilePath)
@@ -35,9 +37,9 @@ if(validShaderType(ShaderType))
 	glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		GLchar[] ShaderErrorMessage;
-		ShaderErrorMessage.length = InfoLogLength+1;
+		ShaderErrorMessage.length = InfoLogLength;
 		glGetShaderInfoLog(ShaderID, InfoLogLength, null, &ShaderErrorMessage[0]);
-		writefln("Error in shader '%s':\n%s", programName(), &ShaderErrorMessage[0]);
+		errorf("Error in shader '%s':\n%s", programName(), ShaderErrorMessage);
 	}
 	return ShaderID;
 }
@@ -58,9 +60,9 @@ GLuint LinkProgram(GLuint vertex, GLuint fragment)
 	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		GLchar[] ProgramErrorMessage;
-		ProgramErrorMessage.length = InfoLogLength+1;
+		ProgramErrorMessage.length = InfoLogLength;
 		glGetProgramInfoLog(ProgramID, InfoLogLength, null, &ProgramErrorMessage[0]);
-		printf("Error Linking Shader:\n%s", &ProgramErrorMessage[0]);
+		errorf("Error Linking Shader:\n%s", ProgramErrorMessage);
 	}
 
 	

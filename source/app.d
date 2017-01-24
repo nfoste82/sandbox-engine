@@ -2,6 +2,8 @@ import std.stdio;
 import std.string;
 import std.conv;
 
+import std.experimental.logger;
+
 import core.time;
 
 import derelict.opengl3.gl3;
@@ -23,6 +25,7 @@ int main()
     auto window = new Window(640, 480, "Hi!", &RenderFrame);
 
     DerelictGL3.reload();
+    logf(LogLevel.info, "OpenGL Version: %s", glGetString(GL_VERSION).fromStringz);
 
     //glEnable(GL_DEBUG_OUTPUT);
     //glDebugMessageCallback(&loggingCallbackOpenGL, null);
