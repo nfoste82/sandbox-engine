@@ -1,0 +1,19 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"de_window": "0.1.3",
+		"derelict-assimp3": "1.3.0",
+		"derelict-ft": "1.1.3",
+		"derelict-gl3": "1.0.21",
+		"derelict-glfw3": "3.1.1",
+		"derelict-il": "1.0.1",
+		"derelict-sdl2": "2.1.0",
+		"derelict-util": "2.0.6",
+		"des": "1.4.1",
+		"descore": "1.2.7",
+		"dglsl": "0.6.0",
+		"gl3n": "1.3.1",
+		"meld": "0.0.1",
+		"objective-gl": "0.0.2"
+	}
+}
