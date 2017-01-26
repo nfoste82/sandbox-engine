@@ -1,14 +1,24 @@
 module window;
 
 import std.string;
+import std.experimental.logger;
 
 import derelict.glfw3;
+
+
+extern(C) void error_callback(int error, const (char)* description) nothrow
+{
+	try{
+    	errorf("GLFW Error:\n%s", description.fromStringz);
+	}
+	catch{}
+}
 
 class Window
 {
 	alias RenderFunction = void function();
 	private RenderFunction render; 
-	private GLFWwindow* window;
+	GLFWwindow* window;
 	this (int width, int height, string title, RenderFunction render)
 	{
 		this.render = render;
@@ -18,6 +28,9 @@ class Window
 	    // initialize glfw
 	    if (!glfwInit())
 	        throw new Exception("Failed to Initialize GLFW!");
+
+	    
+	    glfwSetErrorCallback(&error_callback);
 
 	    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
@@ -50,10 +63,17 @@ class Window
 
 		/* Poll for and process events */
 		glfwPollEvents();
+
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS)
+		{
+			glfwSetWindowShouldClose(window, 1);	    
+		}
+
     }
 
     bool Closed()
     {
 	    return glfwWindowShouldClose(window) == GLFW_TRUE;
     }
+
 }
