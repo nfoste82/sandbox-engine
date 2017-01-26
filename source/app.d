@@ -89,10 +89,11 @@ void RenderFrame()
 	    );
 	  
 	//// Model matrix : an identity matrix (model will be at the origin)
-	mat4 Model = mat4.identity.translate(sin(elapsedSeconds) * 4,0,0);//.rotatey(elapsedSeconds * 0.2f);
+	mat4 Model = mat4.identity.translate(sin(elapsedSeconds) * 2,0,0);//.rotatey(elapsedSeconds * 0.2f);
 
 	//// Our ModelViewProjection : multiplication of our 3 matrices
 	mat4 mvp = Projection * View * Model;
+	mvp.transpose;
 
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   
