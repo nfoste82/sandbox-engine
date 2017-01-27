@@ -27,7 +27,6 @@ class Window
 		_height = height;
 		_width = width;
 	    
-	    glfwSetErrorCallback(&error_callback);
 
 	    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
@@ -108,20 +107,13 @@ private:
 
 private:
 	Window[GLFWwindow*] registry;
-	extern(C) void error_callback(int error, const (char)* description) nothrow
-	{
-		try{
-	    	errorf("GLFW Error:\n%s", description.fromStringz);
-		}
-		catch{}
-	}
 
 	extern (C) void onResize(GLFWwindow* window, int width, int height) nothrow
 	{
 		try
 		{
-		std.stdio.writefln("resizing %sx%s", width, height);
-		}catch{}
-		auto win = registry[window];
-		win.resize(width, height);
+			auto win = registry[window];
+			win.resize(width, height);
+		}
+		catch(Throwable){}
 	}

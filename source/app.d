@@ -33,6 +33,7 @@ int main()
 	// initialize glfw
 	if (!glfwInit())
 		throw new Exception("Failed to Initialize GLFW!");
+    glfwSetErrorCallback(&error_callback);
 
 	scope(exit)glfwTerminate();
 
@@ -192,4 +193,12 @@ void logError()
 	auto errorCode = glGetError();
 	//if(errorCode != GL_NO_ERROR)
 		writefln("%s", glGetError());
+}
+
+extern(C) void error_callback(int error, const (char)* description) nothrow
+{
+	try{
+    	errorf("GLFW Error:\n%s", description.fromStringz);
+	}
+	catch(Throwable){}
 }
