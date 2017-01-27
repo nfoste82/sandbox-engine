@@ -15,7 +15,8 @@ import gl3n.math;
 
 import window;
 import shader;
-import camera;
+import components.camera;
+import components.transform;
 
 Camera cam;
 
@@ -68,8 +69,10 @@ int main()
 
 	glClearColor(0.2,0.4,0.4,1);
 
-	cam = new Camera();
-	cam.position = vec3(0,0,5);
+	auto camTransform = new Transform();
+	cam = new Camera(camTransform);
+	camTransform.position = vec3(0,0,5);
+	camTransform.rotation = quat.euler_rotation(0,PI,0);
 
 	startTime = MonoTime.currTime;
 	double lastTime = glfwGetTime();
@@ -86,39 +89,39 @@ int main()
 		auto delta = deltaTime * speed;
 
 		if (glfwGetKey(window.window, GLFW_KEY_W ) == GLFW_PRESS){
-			cam.position += cam.forward * delta;
+			camTransform.position = camTransform.position + camTransform.forward * delta;
 		}
 		// Move backward
 		if (glfwGetKey(window.window, GLFW_KEY_S ) == GLFW_PRESS){
-			cam.position -= cam.forward * delta;
+			camTransform.position = camTransform.position - camTransform.forward * delta;
 		}
 		// Strafe right
 		if (glfwGetKey(window.window, GLFW_KEY_A ) == GLFW_PRESS){
-			cam.position += cam.right * delta;
+			camTransform.position = camTransform.position + camTransform.right * delta;
 		}
 		// Strafe left
 		if (glfwGetKey(window.window, GLFW_KEY_D ) == GLFW_PRESS){
-			cam.position -= cam.right * delta;
+			camTransform.position = camTransform.position - camTransform.right * delta;
 		}
 
 		// Move up
 		if (glfwGetKey(window.window, GLFW_KEY_E ) == GLFW_PRESS){
-			cam.position += cam.up * delta * 5f;
+			camTransform.position = camTransform.position + camTransform.up * delta;
 		}
 		// Move down
 		if (glfwGetKey(window.window, GLFW_KEY_Q ) == GLFW_PRESS){
-			cam.position -= cam.up * delta * 5f;
+			camTransform.position = camTransform.position - camTransform.up * delta;
 		}
 
 
 		// Rotate right
 		if (glfwGetKey(window.window, GLFW_KEY_Z ) == GLFW_PRESS){
-			cam.rotation.y += delta * 10f;
+			camTransform.rotation = camTransform.rotation.rotatey(delta);
 		}
 		// Rotate left
 		if (glfwGetKey(window.window, GLFW_KEY_C ) == GLFW_PRESS){
 			
-			cam.rotation.y -= delta * 10f;
+			camTransform.rotation = camTransform.rotation.rotatey(-delta);
 		}
 
 
