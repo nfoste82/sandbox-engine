@@ -4,31 +4,28 @@ import std.string;
 import std.experimental.logger;
 
 import derelict.glfw3;
-
-
-extern(C) void error_callback(int error, const (char)* description) nothrow
-{
-	try{
-    	errorf("GLFW Error:\n%s", description.fromStringz);
-	}
-	catch{}
-}
+import derelict.opengl3.gl3;
 
 class Window
 {
-	alias RenderFunction = void function();
-	private RenderFunction render; 
-	GLFWwindow* window;
+	alias RenderFunction = void function(Window);
+
+	int width()
+	{
+		return _width;
+	}
+
+	int height()
+	{
+		return _height;
+	}
+
+
 	this (int width, int height, string title, RenderFunction render)
 	{
-		this.render = render;
-
-	    DerelictGLFW3.load();
-
-	    // initialize glfw
-	    if (!glfwInit())
-	        throw new Exception("Failed to Initialize GLFW!");
-
+		_render = render;
+		_height = height;
+		_width = width;
 	    
 	    glfwSetErrorCallback(&error_callback);
 
@@ -45,23 +42,32 @@ class Window
 	        throw new Exception("Failed to create window");
 	    }
 
+	    glfwSetWindowSizeCallback(window, &onResize);
+
 	    /* Make the window's context current */
 	    glfwMakeContextCurrent(window);
+
+	    registry[window] = this;
 	}
 
 	~this()
 	{
-		glfwTerminate();
+		registry.remove(window);
 	}
 
 	void RenderFrame()
+	in
 	{
-		render();
+		assert(!Closed);
+	}
+	body
+	{
+	    glfwMakeContextCurrent(window);
 
-		/* Swap front and back buffers */
+		_render(this);
+
 		glfwSwapBuffers(window);
 
-		/* Poll for and process events */
 		glfwPollEvents();
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS)
@@ -69,11 +75,53 @@ class Window
 			glfwSetWindowShouldClose(window, 1);	    
 		}
 
+		if(Closed)
+		{
+			glfwDestroyWindow(window);
+			window = null;
+		}
+
     }
 
     bool Closed()
     {
-	    return glfwWindowShouldClose(window) == GLFW_TRUE;
+	    return window == null || glfwWindowShouldClose(window) == GLFW_TRUE;
     }
 
+
+private:
+	RenderFunction _render; 
+	public GLFWwindow* window;
+
+	int _width;
+	int _height;
+
+
+	void resize(int height, int width) nothrow
+	{
+		_width = width;
+		_height = height;
+		glViewport(0,0, width, height);
+	}
 }
+
+
+private:
+	Window[GLFWwindow*] registry;
+	extern(C) void error_callback(int error, const (char)* description) nothrow
+	{
+		try{
+	    	errorf("GLFW Error:\n%s", description.fromStringz);
+		}
+		catch{}
+	}
+
+	extern (C) void onResize(GLFWwindow* window, int width, int height) nothrow
+	{
+		try
+		{
+		std.stdio.writefln("resizing %sx%s", width, height);
+		}catch{}
+		auto win = registry[window];
+		win.resize(width, height);
+	}

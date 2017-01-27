@@ -27,6 +27,14 @@ MonoTime startTime;
 int main()
 {
 	DerelictGL3.load();
+	
+	DerelictGLFW3.load();
+
+	// initialize glfw
+	if (!glfwInit())
+		throw new Exception("Failed to Initialize GLFW!");
+
+	scope(exit)glfwTerminate();
 
 	auto window = new Window(640, 480, "Hi!", &RenderFrame);
 
@@ -49,13 +57,13 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 
 
-	static immutable GLfloat[] g_vertex_buffer_data = [
+	static immutable GLfloat[9] g_vertex_buffer_data = [
 	   -1.0f, -1.0f, 0.0f,
 	   1.0f, -1.0f, 0.0f,
 	   0.0f,  1.0f, 0.0f,
 	];
 
-	glBufferData(GL_ARRAY_BUFFER, cast(long)(g_vertex_buffer_data[0].sizeof * g_vertex_buffer_data.length), cast(void*)g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cast(long)(g_vertex_buffer_data.sizeof), cast(void*)g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	glClearColor(0.2,0.4,0.4,1);
 
@@ -139,13 +147,13 @@ extern (C) nothrow void loggingCallbackOpenGL( GLenum source, GLenum type, GLuin
 	catch{}
 }
 
-void RenderFrame()
+void RenderFrame(Window window)
 {
 	auto elapsed = MonoTime.currTime - startTime;
 	auto elapsedSeconds = elapsed.total!("msecs") / 1000f;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	mat4 Projection = mat4.perspective(640f, 480f,  70f, 1f, 100.0f);
+	mat4 Projection = mat4.perspective(window.width, window.height,  70f, 1f, 100.0f);
 
 	mat4 View = cam.viewMatrix;
 	  
