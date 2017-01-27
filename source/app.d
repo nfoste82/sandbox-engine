@@ -12,7 +12,7 @@ import derelict.opengl3.gl3;
 import gl3n.linalg;
 import gl3n.math;
 
-
+import timeAccumulator;
 import window;
 import shader;
 import components.camera;
@@ -43,8 +43,16 @@ int main()
 	DerelictGL3.reload();
 	logf(LogLevel.info, "OpenGL Version: %s", glGetString(GL_VERSION).fromStringz);
 
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(&loggingCallbackOpenGL, null);
+    bool glLoggingEnabled = true;
+    version(OSX)
+    {
+        glLoggingEnabled = false;
+    }
+    if(glLoggingEnabled)
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(&loggingCallbackOpenGL, null);
+    }
 
 	programID = LoadShader( "shaders/simple.vertex", "shaders/simple.fragment" );
 
@@ -78,13 +86,21 @@ int main()
 	double lastTime = glfwGetTime();
 	double speed = 2f;
 
+	auto fps = TimeAccumulator();
+
 	// Compute time difference between current and last frame
 	while(!window.Closed)
 	{
 		double currentTime = glfwGetTime();
 		float deltaTime = float(currentTime - lastTime);
 		scope(exit)lastTime = currentTime;
-		writefln("fps: %s", 1/deltaTime);
+
+		fps.addTime(deltaTime);
+		if(fps.trackedWindow() > 1f)
+		{
+			writefln("fps: %s", fps.averageRate);
+			fps.reset;
+		}
 
 		auto delta = deltaTime * speed;
 
@@ -141,16 +157,6 @@ int main()
 	return 0;
 }
 
-extern (C) nothrow void loggingCallbackOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity,
-											   GLsizei length, const(GLchar)* message, GLvoid* userParam )
-{
-	try
-	{
-		writefln(message.fromStringz);
-	}
-	catch{}
-}
-
 void RenderFrame(Window window)
 {
 	auto elapsed = MonoTime.currTime - startTime;
@@ -204,4 +210,14 @@ extern(C) void error_callback(int error, const (char)* description) nothrow
     	errorf("GLFW Error:\n%s", description.fromStringz);
 	}
 	catch(Throwable){}
+}
+
+extern (C) nothrow void loggingCallbackOpenGL( GLenum source, GLenum type, GLuint id, GLenum severity,
+                                               GLsizei length, const(GLchar)* message, GLvoid* userParam )
+{
+    try
+    {
+        writefln(message.fromStringz);
+    }
+    catch(Throwable){}
 }
