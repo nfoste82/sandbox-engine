@@ -182,6 +182,8 @@ void RenderFrame(Window window)
 
 	glUseProgram(programID);
 	glEnableVertexAttribArray(0);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glVertexAttribPointer(
 	   0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -191,6 +193,7 @@ void RenderFrame(Window window)
 	   0,                  // stride
 	   cast(void*)0        // array buffer offset
 	);
+
 	// Draw the triangle !
 	glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 	glDisableVertexAttribArray(0);
