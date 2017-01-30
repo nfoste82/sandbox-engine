@@ -6,10 +6,11 @@ import std.experimental.logger;
 import derelict.glfw3;
 import derelict.opengl3.gl3;
 
+import scene.scene;
+import scene.gameObject;
+
 class Window
 {
-	alias RenderFunction = void function(Window);
-
 	int width()
 	{
 		return _width;
@@ -21,9 +22,8 @@ class Window
 	}
 
 
-	this (int width, int height, string title, RenderFunction render)
+	this (int width, int height, string title, Window parent)
 	{
-		_render = render;
 		_height = height;
 		_width = width;
 	    
@@ -54,16 +54,23 @@ class Window
 		registry.remove(window);
 	}
 
+	void SetActiveScene(Scene scene)
+	{
+		_scene = scene;
+	}
+
 	void RenderFrame()
 	in
 	{
 		assert(!Closed);
+		assert(_scene);
 	}
 	body
 	{
+
 	    glfwMakeContextCurrent(window);
 
-		_render(this);
+		_scene.render();
 
 		glfwSwapBuffers(window);
 
@@ -89,8 +96,9 @@ class Window
 
 
 private:
-	RenderFunction _render; 
 	public GLFWwindow* window;
+
+	Scene _scene;
 
 	int _width;
 	int _height;

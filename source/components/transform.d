@@ -2,8 +2,18 @@ module components.transform;
 
 import gl3n.linalg;
 
-class Transform
+import scene.scene;
+import scene.gameObject;
+import components.component;
+import components.registry;
+
+class Transform : Component
 {
+	this(Scene scene, objectID objID)
+	{
+		super(scene, objID);
+	}
+
 	@property vec3 position()
 	{
 		return _position;
@@ -32,6 +42,20 @@ class Transform
 		_rotation = newRotation;
 	}
 
+	@property vec3 scale()
+	{
+		return _scale;
+	}
+	@property void scale(vec3 newScale)
+	in
+	{
+		assert(newScale.isFinite);
+	}
+	body
+	{
+		_scale = newScale;
+	}
+
 	vec3 forward()
 	{
 		return _rotation * vec3(0,0,1);
@@ -46,9 +70,11 @@ class Transform
 	{
 		return _rotation * vec3(0,1,0);
 	}
+
 private:
 	vec3 _position = vec3(0,0,0);
 	quat _rotation = quat.identity;
+	vec3 _scale = vec3(1,1,1);
 
 
 //TBD
