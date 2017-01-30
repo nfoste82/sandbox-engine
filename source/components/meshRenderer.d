@@ -90,7 +90,7 @@ class MeshRenderer : Component
 			}
 			else
 			{
-				float[] white = array(repeat(1f).take(mesh.mNumVertices * 3));
+				float[] white = array(repeat(1f).take(mesh.mNumVertices * 4));
 				glBufferData(GL_ARRAY_BUFFER, white.length * float.sizeof, cast(void*)white, GL_STATIC_DRAW);
 			}
 
