@@ -7,7 +7,7 @@ import std.experimental.logger;
 import core.time;
 
 import derelict.glfw3;
-
+import derelict.assimp3.assimp;
 import derelict.opengl3.gl3;
 import gl3n.linalg;
 import gl3n.math;
@@ -23,6 +23,8 @@ import components.meshRenderer;
 
 int main()
 {
+	DerelictASSIMP3.load();
+
 	DerelictGL3.load();
 	
 	DerelictGLFW3.load();
@@ -55,15 +57,18 @@ int main()
 
 	Scene scene = new Scene(window);
 	auto camera = scene.createObject!(Transform, Camera, CameraControl);
-	auto triangle = scene.createObject!(Transform, MeshRenderer);
+	auto gameObject = scene.createObject!(Transform, MeshRenderer);
 
 	window.SetActiveScene(scene);
 
 	scene.getComponent!(CameraControl)(camera).window = window.window;
 
-	auto triangleMesh = scene.getComponent!(MeshRenderer)(triangle);
-	triangleMesh.loadMesh();
-	triangleMesh.loadMaterial("shaders/simple.vshader", "shaders/UnlitVertexColored.fshader");
+	auto gameObjectMesh = scene.getComponent!(MeshRenderer)(gameObject);
+	gameObjectMesh.loadMesh();
+	gameObjectMesh.loadMaterial("shaders/simple.vshader", "shaders/UnlitVertexColored.fshader");
+
+	auto gameObjectTransform = scene.getComponent!(Transform)(gameObject);
+	gameObjectTransform.rotation = gameObjectTransform.rotation.rotatey(PI);
 
 	glClearColor(0.2,0.4,0.4,1);
 
@@ -100,7 +105,7 @@ int main()
 extern(C) void error_callback(int error, const (char)* description) nothrow
 {
 	try{
-    	errorf("GLFW Error:\n%s", description.fromStringz);
+    	errorf("GLFW Error %s:\n%s", error, description.fromStringz);
 	}
 	catch(Throwable){}
 }

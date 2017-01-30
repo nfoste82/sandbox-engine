@@ -67,6 +67,7 @@ class Window
 	}
 	body
 	{
+
 	    glfwMakeContextCurrent(window);
 
 		_scene.render();

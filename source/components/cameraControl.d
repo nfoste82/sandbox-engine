@@ -9,6 +9,8 @@ import components.camera;
 import components.updatingComponent;
 import derelict.glfw3;
 
+import gl3n.math;
+
 class CameraControl : UpdatingComponent
 {
 	this(Scene scene, objectID objID)
@@ -53,12 +55,12 @@ class CameraControl : UpdatingComponent
 
 		// Rotate right
 		if (glfwGetKey(window, GLFW_KEY_Z ) == GLFW_PRESS){
-			_transform.rotation = _transform.rotation.rotatey(delta);
+			_transform.rotation = _transform.rotation.rotatey(radians(delta));
 		}
 		// Rotate left
 		if (glfwGetKey(window, GLFW_KEY_C ) == GLFW_PRESS){
 			
-			_transform.rotation = _transform.rotation.rotatey(-delta);
+			_transform.rotation = _transform.rotation.rotatey(-radians(delta));
 		}
 
 

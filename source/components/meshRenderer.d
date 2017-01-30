@@ -1,8 +1,11 @@
 module components.meshRenderer;
 
+import std.range;
+import std.array;
 import std.experimental.logger;
 
 import derelict.opengl3.gl3;
+import derelict.assimp3.assimp;
 
 import scene.scene;
 import scene.gameObject;
@@ -16,45 +19,76 @@ class MeshRenderer : Component
 		super(scene, objID);
 	}
 
-	@property GLuint meshID()
+	@property GLuint[] meshIDs()
 	{
-		return vertexbuffer;
+		return vertexbuffers;
 	}
-	@property GLuint shaderID()
+	@property GLuint[] meshColors()
 	{
-		return programID;
+		return colorbuffers;
+	}
+	@property GLuint[] shaderIDs()
+	{
+		return programIDs;
 	}
 
+	@property uint[] triangleCounts()
+	{
+		return _triangleCounts;
+	}
 
 	void loadMesh()
 	{
-		log("loading mesh");
-		static immutable GLfloat[9] g_vertex_buffer_data = [
-		   -1.0f, -1.0f, 0.0f,
-		   1.0f, -1.0f, 0.0f,
-		   0.0f,  1.0f, 0.0f,
-		];
+		//const(aiScene*) scene = aiImportFile( "assets/dragon_recon/dragon_vrip_res4.ply", 0);
+		const(aiScene*) scene = aiImportFile( "assets/dragon_recon/dragon_vrip.ply", 0);
 
-		log("gen and bind");
-		GLuint VertexArrayID;
-		glGenVertexArrays(1, &VertexArrayID);
-		glBindVertexArray(VertexArrayID);
+		GLuint[] VertexArrayIDs;
+		
+		int numMeshes = scene.mNumMeshes;
+		VertexArrayIDs.length = numMeshes;
+		_triangleCounts.length = numMeshes;
+		vertexbuffers.length = numMeshes;
+ 		colorbuffers.length = numMeshes;
+		
+		glGenVertexArrays(numMeshes, &VertexArrayIDs[0]);
 
 		// Generate 1 buffer, put the resulting identifier in vertexbuffer
-		glGenBuffers(1, &vertexbuffer);
+		glGenBuffers(numMeshes, &vertexbuffers[0]);
+		glGenBuffers(numMeshes, &colorbuffers[0]);
 
-		// The following commands will talk about our 'vertexbuffer' buffer
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, cast(long)(g_vertex_buffer_data.sizeof), cast(void*)g_vertex_buffer_data, GL_STATIC_DRAW);
+		for(int i = 0; i < vertexbuffers.length; ++i)
+		{
+			glBindVertexArray(VertexArrayIDs[i]);
+			auto mesh = scene.mMeshes[i];
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffers[i]);
+			glBufferData(GL_ARRAY_BUFFER, cast(long)(mesh.mNumVertices * aiVector3D.sizeof), cast(void*)mesh.mVertices, GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ARRAY_BUFFER, colorbuffers[i]);
+			if(mesh.mColors[i] != null)
+			{
+				glBufferData(GL_ARRAY_BUFFER, mesh.mNumVertices * aiColor4D.sizeof, cast(void*)mesh.mColors[i], GL_STATIC_DRAW);
+			}
+			else
+			{
+				float[] white = array(repeat(1f).take(mesh.mNumVertices * 3));
+				glBufferData(GL_ARRAY_BUFFER, white.length * float.sizeof, cast(void*)white, GL_STATIC_DRAW);
+			}
+
+			_triangleCounts[i] = mesh.mNumFaces * 3;
+		}
 	}
 
 	void loadMaterial(string vertexPath, string fragmentPath)
 	{
-		programID = LoadShader( vertexPath, fragmentPath );
+		programIDs = [LoadShader( vertexPath, fragmentPath )];
 	}
 
 
 private:
-	GLuint vertexbuffer;
-	GLuint programID;
+	GLuint[] vertexbuffers;
+	GLuint[] colorbuffers;
+	GLuint[] programIDs;
+
+	uint[] _triangleCounts;
 }
