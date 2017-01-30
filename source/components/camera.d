@@ -25,7 +25,7 @@ class Camera : Component
 	int depth = 0;
 	float fov = 70f;
 	float nearClip = 0.1f;
-	float farClip = 100f;
+	float farClip = 1000f;
 
 	@property Transform transform()
 	{
@@ -39,6 +39,8 @@ class Camera : Component
 
 	void render()
 	{
+		import derelict.glfw3.glfw3;
+		double time = glfwGetTime();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		mat4 Projection = mat4.perspective(scene.window.width, scene.window.height,  fov, nearClip, farClip);
@@ -59,22 +61,25 @@ class Camera : Component
 			.translate(transform.position)
 			;
 
-			Model = Model.scale(200,200,200);
-
 			//// Our ModelViewProjection : multiplication of our 3 matrices
 			mat4 mvp = vp * Model;
 			mvp.transpose;
 
-			foreach(mesh, colors, shader, faceCount; zip(renderer.meshIDs, renderer.meshColors, renderer.shaderIDs.chain(renderer.shaderIDs.back.repeat), renderer.triangleCounts))
+			foreach(
+				mesh, normals, colors, shader, faceCount;
+			 	zip(renderer.meshs, renderer.normals, renderer.meshColors, renderer.shaders.chain(renderer.shaders.back.repeat), renderer.triangleCounts))
 			{
 
 				glUseProgram(shader);
 				GLuint MatrixID = glGetUniformLocation(shader, "MVP");
-			  
-				// Send our transformation to the currently bound shader, in the "MVP" uniform
-				// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+			  	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, mvp.value_ptr);
+				MatrixID = glGetUniformLocation(shader, "M");
+			  	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, Model.value_ptr);
+				MatrixID = glGetUniformLocation(shader, "V");
+			  	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, View.value_ptr);
 
-				glUniformMatrix4fv(MatrixID, 1, GL_FALSE, mvp.value_ptr);
+			  	GLuint vectorID = glGetUniformLocation(shader, "LightPosition_worldspace");
+			  	glUniform3f(vectorID, sin(time) * 10,20,10);
 
 				glEnableVertexAttribArray(0);
 				glCullFace(GL_BACK);
@@ -98,6 +103,16 @@ class Camera : Component
 				    GL_FALSE,                         // normalized?
 				    0,                                // stride
 				    cast(void*)0                          // array buffer offset
+				);
+				glEnableVertexAttribArray(2);
+				glBindBuffer(GL_ARRAY_BUFFER, normals);
+				glVertexAttribPointer(
+					2,                                // attribute
+					3,                                // size
+					GL_FLOAT,                         // type
+					GL_FALSE,                         // normalized?
+					0,                                // stride
+					cast(void*)0                          // array buffer offset
 				);
 
 				// Draw the triangle !

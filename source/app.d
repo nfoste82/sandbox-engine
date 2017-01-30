@@ -37,7 +37,7 @@ int main()
 	scope(exit)glfwTerminate();
 
 
-	auto window = new Window(640, 480, "Hi!", null);
+	auto window = new Window(1024, 768, "Hi!", null);
 
 
 	DerelictGL3.reload();
@@ -65,10 +65,11 @@ int main()
 
 	auto gameObjectMesh = scene.getComponent!(MeshRenderer)(gameObject);
 	gameObjectMesh.loadMesh();
-	gameObjectMesh.loadMaterial("shaders/simple.vshader", "shaders/UnlitVertexColored.fshader");
+	gameObjectMesh.loadMaterial("shaders/simpleLit.vshader", "shaders/simpleLit.fshader");
 
 	auto gameObjectTransform = scene.getComponent!(Transform)(gameObject);
-	gameObjectTransform.rotation = gameObjectTransform.rotation.rotatey(PI);
+	gameObjectTransform.position = vec3(0f, -10f, -10f);
+	gameObjectTransform.scale = vec3(200f, 200f, 200f);
 
 	glClearColor(0.2,0.4,0.4,1);
 
